@@ -415,3 +415,194 @@ SHOW TABLES;
 ##### 查看表结构
 
 若查看表之前未声明该表所在的数据库，则需要**用限定符指定数据库名称.表名**。
+
+基础语法格式：`DESCRIBE <表名>;` 或 `DESC <表名>;`
+
+```mysql
+# 查看表结构
+DESCRIBE test.dept;
+```
+
+#### 修改表
+
+##### 修改表名
+
+对表名进行修改，不用考虑被修改的表中是否有数据。
+
+基础语法格式：`ALTER TABLE <原表名> RENAME <新表名>;`
+
+```mysql
+# 将 dept 表名改为 department
+ALTER TABLE dept RENAME department;
+```
+
+##### 修改字段名
+
+对字段名进行修改，不用考虑被修改的字段中是否有数据。
+
+基础语法格式：`ALTER TABLE <表名> CHANGE <原字段名> <新字段名> <新数据类型>;`
+
+```mysql
+# 修改字段名 depid 为 depno
+ALTER TABLE department CHANGE depid depno CHAR(3);
+```
+
+##### 修改字段类型
+
+基础语法格式：`ALTER TABLE <表名> MODIFY <字段名> <新数据类型>;`
+
+```mysql
+# 修改 depno 的字段类型为 VARCHAR(5)
+ALTER TABLE department MODIFY depno VARCHAR(5);
+```
+
+##### 添加新字段
+
+添加字段的位置可以指定，在不指定的情况下会默认将新字段添加到表中的最后一列。
+
+基础语法格式：`ALTER TABLE <表名> ADD <新字段名> <数据类型> <约束条件> <FIRST/AFTER 参照字段名>;`
+
+```mysql
+# 在 department 表中添加新字段 city
+ALTER TABLE department ADD city VARCHAR(10);
+```
+
+##### 修改字段的排列位置
+
+- 通常将主键放在第一或前几列；
+- 常用或重要的字段排在表的前列；
+- 同类型的字段尽可能根据业务逻辑排列在一起。
+
+基础语法格式：`ALTER TABLE <表名> MODIFY <字段名> <数据类型> FIRST/AFTER <参照字段名>;`
+
+```mysql
+# 修改字段 city 的排列位置到 depno 后面
+ALTER TABLE department MODIFY city VARCHAR(10) AFTER depno;
+```
+
+##### 删除字段
+
+基础语法格式：`ALTER TABLE <表名> DROP <字段名>;`
+
+```mysql
+# 删除字段 city
+ALTER TABLE department DROP city;
+```
+
+#### 删除表
+
+`IF EXISTS` 主要用于判断表名是否存在，如果表名输入错误，语句也不会报错，会正常执行，但是需要删除的表并没有被删除。
+
+基础语法格式：`DROP TABLE [IF EXIST] <表名1>, <表名2>, ..., <表名n>;`
+
+```mysql
+# 删除 department 表
+DROP TABLE department;
+```
+
+### 3.2.4 数据类型
+
+数据库中常用的数据类型有：**数值型**、**字符串型（文本型）**、**日期时间型**。
+
+#### 定义数据类型
+
+计算机专业本科学过，略。
+
+#### 数值型
+
+##### 整数型
+
+详见书 P89 表 3-3。
+
+##### 小数型
+
+详见书 P90。
+
+#### 字符串型
+
+详见书 P90-91。
+
+#### 日期时间型
+
+详见书 P91-92。
+
+### 3.2.5 约束条件
+
+#### 定义约束条件
+
+|     约束条件     |     说明     |                  语法                  |
+| :--------------: | :----------: | :------------------------------------: |
+|  `PRIMARY KEY`   |   主键约束   |   `<字段名> <数据类型> PRIMARY KEY`    |
+|    `NOT NULL`    |   非空约束   |     `<字段名> <数据类型> NOT NULL`     |
+|     `UNIQUE`     |   唯一约束   |      `<字段名> <数据类型> UNIQUE`      |
+| `AUTO INCREMENT` | 自动增长约束 |  `<字段名> <数据类型> AUTO INCREMENT`  |
+|    `DEFAULT`     |   默认约束   | `<字段名> <数据类型> DEFAULT <默认值>` |
+
+1. `PRIMARY KEY` ：唯一标识表中的每行记录，要求字段中的数据记录是**非空**和**唯一**的；
+2. `NOT NULL` ：限制字段中的数据记录不能有空值；
+3. `UNIQUE` ：限制字段中的数据记录不能有重复值；
+4. `AUTO INCREMENT` ：需要**和主键约束一起使用**，并且只有**整数型字段**才可以添加自动增长约束；
+5. `DEFAULT` ：为字段设置默认值；
+6. 除了上述 5 种，SQL 还使用**外键约束**来指定表和表之间的依赖关系，该约束条件受到实际业务的限制，在企业数据库中极少用到。
+
+#### 主键约束
+
+##### 单字段主键约束
+
+基础语法格式：
+
+```mysql
+CREATE TABLE <表名> (
+    <字段名1> <字段类型1> PRIMARY KEY,
+    ...
+    <字段名n> <字段类型n>
+);
+```
+
+```mysql
+CREATE TABLE dept (
+    # 单字段主键
+    depid CHAR(3) PRIMARY KEY,
+    depname VARCHAR(20),
+    peoplecount INT
+);
+```
+
+##### 多字段主键约束
+
+基础语法格式：
+
+```mysql
+CREATE TABLE <表名> (
+    <字段名1> <字段类型1>,
+    ...
+    <字段名n> <字段类型n>,
+    [CONSTRAINT 主键约束名] PRIMARY KEY (<字段名1>, ..., <字段名k>)
+);
+```
+
+```mysql
+CREATE TABLE dept (
+    depid CHAR(3) PRIMARY KEY,
+    depname VARCHAR(20),
+    peoplecount INT
+    # 多字段联合主键
+    PRIMARY KEY (depname, depid)
+);
+```
+
+主键约束可以删除。
+
+基础语法格式：`ALTER TABLE <表名> DROP PRIMARY KEY;`
+
+```mysql
+# 删除表中的主键约束
+ALTER TABLE dept DROP PRIMARY KEY;
+```
+
+#### 唯一约束
+
+##### 创建唯一约束
+
+基础语法格式 1：
+
